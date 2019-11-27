@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Annotation\ApiSubresource;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 
 /**
  * A description of an educational course which may be offered as distinct instances at which take place at different times or take place at different locations, or be offered through different media or modes of study. An educational course is a sequence of one or more educational events and/or creative works which aims to build knowledge, competence or ability of learners.
@@ -20,8 +23,14 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @ORM\Entity
  * @ApiResource(iri="http://schema.org/Course",
  *     collectionOperations={"GET","POST"},
- *     itemOperations={"GET","PUT","DELETE"}
+ *     itemOperations={"GET","PUT","DELETE"},
+ *     normalizationContext={"groups"={"course:output"}},
+ *     denormalizationContext={"groups"={"course:input"}}
  * )
+ * @ApiFilter(SearchFilter::class, properties={
+ *     "contributors.id":"exact",
+ *     "abouts.id":"partial"
+ * })
  */
 class Course
 {
@@ -41,6 +50,7 @@ class Course
      * @ORM\JoinTable(inverseJoinColumns={@ORM\JoinColumn(nullable=false, unique=true)})
      * @ApiProperty(iri="http://schema.org/about")
      * @Assert\NotNull
+     * @Groups({"course:input"})
      */
     private $abouts;
 
@@ -49,6 +59,7 @@ class Course
      *
      * @ORM\Column(type="text")
      * @Assert\NotNull
+     * @Groups({"course:input"})
      */
     private $abstract;
 
@@ -154,7 +165,9 @@ class Course
     {
         return $this->abstract;
     }
-
+    public function hasEditor(): bool {
+        return $this->editor !== null;
+    }
     public function setEditor(Person $editor): void
     {
         $this->editor = $editor;
@@ -234,5 +247,4 @@ class Course
     {
         return $this->educationEvents;
     }
-
 }

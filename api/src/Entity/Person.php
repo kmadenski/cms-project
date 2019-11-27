@@ -18,8 +18,8 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  * @ORM\Entity
  * @ApiResource(iri="http://schema.org/Person",
- *     collectionOperations={},
- *     itemOperations={"PUT"}
+ *     collectionOperations={"POST"},
+ *     itemOperations={"PUT","GET"}
  * )
  */
 class Person
