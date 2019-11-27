@@ -1,0 +1,58 @@
+types:
+  Person:
+    properties:
+      alumniOf: {range: EducationalOrganization, cardinality: "(0..*)"}
+      birthDate: ~
+      colleague: {range: Person, cardinality: "(0..*)"}
+      email: ~
+      funder: {range: Person}
+      gender: ~
+      name: ~
+      skills: {range: Skill, cardinality: "(0..*)"}
+      knowsLanguage: {range: Language, cardinality: "(0..*)"}
+      telephone: ~
+      description: ~
+      image: ~
+      joins: {range: JoinAction, cardinality: "(*..1)"}
+  Course:
+    properties:
+      about: {range: Skill, cardinality: "(1..*)"}
+      abstract: {range: "Text"}
+      editor: {range: Person, cardinality: "(1..1)"}
+      contributor: {range: Person, cardinality: "(0..*)"}
+      minimumAttendeeCapacity: {range: "Integer"}
+      maximumAttendeeCapacity: {range: "Integer"}
+      isPrivate: {range: "Boolean"}
+      dateCreated: ~
+      joins: {range: JoinAction, cardinality: "(*..1)"}
+      events: {range: EducationEvent ,cardinality: "(0..*)"}}
+  EducationEvent:
+    properties:
+      about: {range: Skill, cardinality: "(1..*)"}
+      attendee: {range: Person, cardinality: "(0..*)"}
+      eventStatus: {range: EventStatusType}
+      doorTime: ~
+      endDate: ~
+      maximumAttendeeCapacity: ~
+  NotifyWish:
+    properties:
+      funder: {range: Person, cardinality: "(1..1)"}
+      skill: {range: Skill, cardinality: "(1..1)"}
+  JoinAction:
+    properties:
+      actionStatus: {range: ActionStatusType}
+      user: Person
+  EducationalOrganization:
+    properties:
+      address: ~
+      legalName: ~
+  Language:
+    properties:
+      name: ~
+  Skill:
+    properties:
+      name: ~
+  EventStatusType:
+    properties: {}
+  ActionStatusType :
+    properties: {}
