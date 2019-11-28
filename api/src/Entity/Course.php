@@ -22,14 +22,21 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
  *
  * @ORM\Entity
  * @ApiResource(iri="http://schema.org/Course",
- *     collectionOperations={"GET","POST"},
- *     itemOperations={"GET","PUT","DELETE"},
- *     normalizationContext={"groups"={"course:output"}},
- *     denormalizationContext={"groups"={"course:input"}}
+ *     collectionOperations={
+ *          "GET"={"security"="is_granted('ROLE_ADMIN') or is_granted('ROLE_USER')"},
+ *          "POST"={"security"="is_granted('ROLE_ADMIN') or is_granted('ROLE_USER')"},
+ *     },
+ *     itemOperations={
+ *          "GET"={"security"="is_granted('ROLE_ADMIN') or is_granted('ROLE_USER')"},
+ *          "PUT"={"security"="is_granted('ROLE_ADMIN') or (is_granted('ROLE_USER') and and object.editor == user)"},
+ *          "DELETE"={"security"="is_granted('ROLE_ADMIN') or (is_granted('ROLE_USER') and and object.editor == user)"},
+ *     }
  * )
  * @ApiFilter(SearchFilter::class, properties={
- *     "contributors.id":"exact",
- *     "abouts.id":"partial"
+ *     "abouts.name": "partial",
+ *     "abstract": "partial",
+ *     "editor.id": "exact",
+ *     "isPrivate": "exact"
  * })
  */
 class Course
@@ -40,6 +47,7 @@ class Course
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="AUTO")
      * @ORM\Column(type="integer")
+     * @Groups({"admin:output","user:output"})
      */
     private $id;
 
@@ -49,8 +57,7 @@ class Course
      * @ORM\ManyToMany(targetEntity="App\Entity\Skill")
      * @ORM\JoinTable(inverseJoinColumns={@ORM\JoinColumn(nullable=false, unique=true)})
      * @ApiProperty(iri="http://schema.org/about")
-     * @Assert\NotNull
-     * @Groups({"course:input"})
+     * @Groups({"admin:output","admin:input","user:output","user:input"})
      */
     private $abouts;
 
@@ -59,7 +66,7 @@ class Course
      *
      * @ORM\Column(type="text")
      * @Assert\NotNull
-     * @Groups({"course:input"})
+     * @Groups({"admin:output","admin:input","user:output","user:input"})
      */
     private $abstract;
 
@@ -69,6 +76,7 @@ class Course
      * @ORM\OneToOne(targetEntity="App\Entity\Person")
      * @ORM\JoinColumn(nullable=false)
      * @ApiProperty(iri="http://schema.org/editor")
+     * @Groups({"admin:output","admin:input","user:output"})
      * @Assert\NotNull
      */
     private $editor;
@@ -80,13 +88,21 @@ class Course
      * @ORM\JoinTable(inverseJoinColumns={@ORM\JoinColumn(unique=true)})
      * @ApiProperty(iri="http://schema.org/contributor")
      * @ApiSubresource()
+     * @Groups({"admin:output","admin:input","user:output"})
      */
     private $contributors;
-
+    /**
+     * @var Collection<Membership>|null
+     * @ORM\OneToMany(targetEntity="App\Entity\Membership", mappedBy="course")
+     * @ApiSubresource()
+     * @Groups({"admin:output","admin:input","user:output"})
+     */
+    private $members;
     /**
      * @var int
      *
      * @ORM\Column(type="integer")
+     * @Groups({"admin:output","admin:input","user:output","user:input"})
      * @Assert\NotNull
      */
     private $minimumAttendeeCapacity;
@@ -95,6 +111,7 @@ class Course
      * @var int
      *
      * @ORM\Column(type="integer")
+     * @Groups({"admin:output","admin:input","user:output","user:input"})
      * @Assert\NotNull
      */
     private $maximumAttendeeCapacity;
@@ -103,6 +120,7 @@ class Course
      * @var bool
      *
      * @ORM\Column(type="boolean")
+     * @Groups({"admin:output","admin:input","user:output","user:input"})
      * @Assert\NotNull
      */
     private $isPrivate;
@@ -112,7 +130,7 @@ class Course
      *
      * @ORM\Column(type="date", nullable=true)
      * @ApiProperty(iri="http://schema.org/dateCreated")
-     * @Assert\Date
+     * @Groups({"admin:output","admin:input","user:output"})
      */
     private $dateCreated;
 
@@ -120,20 +138,25 @@ class Course
      * @var Collection<JoinAction>|null
      * @ORM\OneToMany(targetEntity="App\Entity\JoinAction", mappedBy="course")
      * @ApiSubresource()
+     * @Groups({"admin:output","admin:input","user:output"})
      */
     private $joins;
     /**
      * @var Collection<EducationEvent>|null
      * @ORM\OneToMany(targetEntity="App\Entity\EducationEvent", mappedBy="course")
-     * @ApiSubresource()
+     * @ApiSubresource(maxDepth=1)
+     * @ApiProperty(attributes={"fetchEager": false})
+     * @Groups({"admin:output","admin:input","user:output"})
      */
     private $educationEvents;
 
     public function __construct()
     {
+        $this->dateCreated = new \DateTime();
         $this->abouts = new ArrayCollection();
         $this->contributors = new ArrayCollection();
         $this->educationEvents = new ArrayCollection();
+        $this->members = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -165,9 +188,7 @@ class Course
     {
         return $this->abstract;
     }
-    public function hasEditor(): bool {
-        return $this->editor !== null;
-    }
+
     public function setEditor(Person $editor): void
     {
         $this->editor = $editor;
@@ -192,7 +213,10 @@ class Course
     {
         return $this->contributors;
     }
-
+    public function getMembers(): Collection
+    {
+        return $this->members;
+    }
     public function setMinimumAttendeeCapacity(int $minimumAttendeeCapacity): void
     {
         $this->minimumAttendeeCapacity = $minimumAttendeeCapacity;
@@ -247,4 +271,5 @@ class Course
     {
         return $this->educationEvents;
     }
+
 }

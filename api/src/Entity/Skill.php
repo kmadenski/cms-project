@@ -7,7 +7,6 @@ namespace App\Entity;
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * The most generic type of item.
@@ -16,8 +15,15 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *
  * @ORM\Entity
  * @ApiResource(iri="http://schema.org/Thing",
- *     collectionOperations={},
- *     itemOperations={}
+ *     collectionOperations={
+ *          "GET"={"security"="is_granted('ROLE_ADMIN')"},
+ *          "POST"={"security"="is_granted('ROLE_ADMIN')"},
+ *     },
+ *     itemOperations={
+ *          "GET"={"security"="is_granted('ROLE_ADMIN')"},
+ *          "PUT"={"security"="is_granted('ROLE_ADMIN')"},
+ *          "DELETE"={"security"="is_granted('ROLE_ADMIN')"}
+ *     }
  * )
  */
 class Skill
@@ -28,7 +34,6 @@ class Skill
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="AUTO")
      * @ORM\Column(type="integer")
-     * @Groups({"course:input"})
      */
     private $id;
 
@@ -37,7 +42,6 @@ class Skill
      *
      * @ORM\Column(type="text", nullable=true)
      * @ApiProperty(iri="http://schema.org/name")
-     * @Groups({"course:input"})
      */
     private $name;
 

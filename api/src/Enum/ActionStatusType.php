@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Enum;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use MyCLabs\Enum\Enum;
 
 /**
