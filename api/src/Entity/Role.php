@@ -1,6 +1,5 @@
 <?php
 
-declare(strict_types=1);
 
 namespace App\Entity;
 
@@ -9,12 +8,12 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Natural languages such as Spanish, Tamil, Hindi, English, etc. Formal language code tags expressed in \[BCP 47\](https://en.wikipedia.org/wiki/IETF\_language\_tag) can be used via the \[\[alternateName\]\] property. The Language type previously also covered programming languages such as Scheme and Lisp, which are now best represented using \[\[ComputerLanguage\]\].
+ * A person (alive, dead, undead, or fictional).
  *
- * @see http://schema.org/Language Documentation on Schema.org
+ * @see http://schema.org/Person Documentation on Schema.org
  *
- * @ORM\Entity
- * @ApiResource(iri="http://schema.org/Language",
+ * @ORM\Entity()
+ * @ApiResource(iri="http://schema.org/Role",
  *     collectionOperations={
  *          "GET"={"security"="is_granted('ROLE_ADMIN')"},
  *          "POST"={"security"="is_granted('ROLE_ADMIN')"},
@@ -26,7 +25,7 @@ use Doctrine\ORM\Mapping as ORM;
  *     }
  * )
  */
-class Language
+class Role
 {
     /**
      * @var int|null
@@ -40,7 +39,7 @@ class Language
     /**
      * @var string|null the name of the item
      *
-     * @ORM\Column(type="text", nullable=true)
+     * @ORM\Column(type="text", nullable=false)
      * @ApiProperty(iri="http://schema.org/name")
      */
     private $name;

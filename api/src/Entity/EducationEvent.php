@@ -6,10 +6,12 @@ namespace App\Entity;
 
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Annotation\ApiSubresource;
 use App\Enum\EventStatusType;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -19,8 +21,15 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  * @ORM\Entity
  * @ApiResource(iri="http://schema.org/EducationEvent",
- *     collectionOperations={"GET","POST"},
- *     itemOperations={"GET","PUT","DELETE"}
+ *     collectionOperations={
+ *          "GET"={"security"="is_granted('ROLE_ADMIN') or is_granted('ROLE_USER')"},
+ *          "POST"={"security"="is_granted('ROLE_ADMIN') or (is_granted('ROLE_USER'))"},
+ *     },
+ *     itemOperations={
+ *          "GET"={"security"="is_granted('ROLE_ADMIN') or is_granted('ROLE_USER')"},
+ *          "PUT"={"security"="is_granted('ROLE_ADMIN') or (is_granted('ROLE_USER') and object.funder == user)"},
+ *          "DELETE"={"security"="is_granted('ROLE_ADMIN') or (is_granted('ROLE_USER') and object.funder == user)"},
+ *     }
  * )
  */
 class EducationEvent
@@ -31,6 +40,7 @@ class EducationEvent
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="AUTO")
      * @ORM\Column(type="integer")
+     * @Groups({"admin:output","user:output"})
      */
     private $id;
 
@@ -41,15 +51,15 @@ class EducationEvent
      * @ORM\JoinTable(inverseJoinColumns={@ORM\JoinColumn(nullable=false, unique=true)})
      * @ApiProperty(iri="http://schema.org/about")
      * @Assert\NotNull
+     * @Groups({"admin:output","admin:input","user:output","user:input"})
      */
     private $abouts;
-
     /**
      * @var Collection<Person>|null a person or organization attending the event
      *
-     * @ORM\ManyToMany(targetEntity="App\Entity\Person")
-     * @ORM\JoinTable(inverseJoinColumns={@ORM\JoinColumn(unique=true)})
+     * @ORM\OneToMany(targetEntity="App\Entity\Attendee", mappedBy="event")
      * @ApiProperty(iri="http://schema.org/attendee")
+     * @ApiSubresource()
      */
     private $attendees;
 
@@ -59,6 +69,7 @@ class EducationEvent
      * @ORM\Column(nullable=true)
      * @ApiProperty(iri="http://schema.org/eventStatus")
      * @Assert\Choice(callback={"EventStatusType", "toArray"})
+     * @Groups({"admin:output","admin:input","user:output","user:input"})
      */
     private $eventStatus;
 
@@ -68,6 +79,7 @@ class EducationEvent
      * @ORM\Column(type="datetime", nullable=true)
      * @ApiProperty(iri="http://schema.org/doorTime")
      * @Assert\DateTime
+     * @Groups({"admin:output","admin:input","user:output","user:input"})
      */
     private $doorTime;
 
@@ -77,6 +89,7 @@ class EducationEvent
      * @ORM\Column(type="date", nullable=true)
      * @ApiProperty(iri="http://schema.org/endDate")
      * @Assert\Date
+     * @Groups({"admin:output","admin:input","user:output","user:input"})
      */
     private $endDate;
 
@@ -85,6 +98,7 @@ class EducationEvent
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\Person")
      * @ApiProperty(iri="http://schema.org/funder")
+     * @Groups({"admin:output","admin:input","user:output"})
      */
     private $funder;
 
@@ -93,6 +107,7 @@ class EducationEvent
      *
      * @ORM\Column(type="integer", nullable=true)
      * @ApiProperty(iri="http://schema.org/maximumAttendeeCapacity")
+     * @Groups({"admin:output","admin:input","user:output","user:input"})
      */
     private $maximumAttendeeCapacity;
     /**
@@ -100,6 +115,8 @@ class EducationEvent
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\Course")
      * @ORM\JoinColumn(nullable=false)
+     * @Assert\NotNull
+     * @Groups({"admin:output","admin:input","user:output","user:input"})
      */
     private $course;
 

@@ -8,6 +8,7 @@ use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use App\Enum\ActionStatusType;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -17,8 +18,15 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  * @ORM\Entity
  * @ApiResource(iri="http://schema.org/JoinAction",
- *     collectionOperations={"GET","POST"},
- *     itemOperations={"GET","DELETE"}
+ *     collectionOperations={
+ *          "GET"={"security"="is_granted('ROLE_ADMIN') or is_granted('ROLE_USER')"},
+ *          "POST"={"security"="is_granted('ROLE_ADMIN') or is_granted('ROLE_USER')"},
+ *     },
+ *     itemOperations={
+ *          "GET"={"security"="is_granted('ROLE_ADMIN') or (is_granted('ROLE_USER') and object.course.funder == user) or (is_granted('ROLE_USER') and object.funder == user)"},
+ *          "PUT"={"security"="is_granted('ROLE_ADMIN') or (is_granted('ROLE_USER') and object.course.funder == user)"},
+ *          "DELETE"={"security"="is_granted('ROLE_ADMIN') or (is_granted('ROLE_USER') and object.course.funder == user) or (is_granted('ROLE_USER') and object.funder == user)"},
+ *     }
  * )
  */
 class JoinAction
@@ -37,7 +45,8 @@ class JoinAction
      *
      * @ORM\Column(nullable=true)
      * @ApiProperty(iri="http://schema.org/actionStatus")
-     * @Assert\Choice(callback={"ActionStatusType", "toArray"})
+     * @Assert\Choice(callback={"App\Enum\ActionStatusType", "toArray"})
+     * @Groups({"anonymous:input","admin:output","admin:input","user:output","user:input"})
      */
     private $actionStatus;
 
@@ -46,8 +55,19 @@ class JoinAction
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\Course")
      * @ORM\JoinColumn(nullable=false)
+     * @Groups({"anonymous:input","admin:output","admin:input","user:output","user:input"})
      */
     private $course;
+    /**
+     * @var Person
+     *
+     * @ORM\OneToOne(targetEntity="App\Entity\Person")
+     * @ORM\JoinColumn(nullable=false)
+     * @Assert\NotNull
+     * @Groups({"admin:output","admin:input"})
+     */
+    private $funder;
+
 
     public function getId(): ?int
     {
@@ -73,4 +93,21 @@ class JoinAction
     {
         return $this->course;
     }
+
+    /**
+     * @return Person
+     */
+    public function getFunder(): Person
+    {
+        return $this->funder;
+    }
+    /**
+     * @param Person $funder
+     */
+    public function setFunder(Person $funder): void
+    {
+        $this->funder = $funder;
+    }
+
+
 }

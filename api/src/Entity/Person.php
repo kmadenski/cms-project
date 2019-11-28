@@ -9,6 +9,8 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -18,11 +20,18 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  * @ORM\Entity
  * @ApiResource(iri="http://schema.org/Person",
- *     collectionOperations={},
- *     itemOperations={"PUT"}
+ *     collectionOperations={
+ *          "GET"={"security"="is_granted('ROLE_ADMIN')"},
+ *          "POST"={}
+ *     },
+ *     itemOperations={
+ *          "GET"={"security"="is_granted('ROLE_ADMIN') or (is_granted('ROLE_USER') and object == user)"},
+ *          "PUT"={"security"="is_granted('ROLE_ADMIN') or (is_granted('ROLE_USER') and object == user)"},
+ *          "DELETE"={"security"="is_granted('ROLE_ADMIN')"}
+ *     }
  * )
  */
-class Person
+class Person implements UserInterface
 {
     /**
      * @var int|null
@@ -39,6 +48,7 @@ class Person
      * @ORM\ManyToMany(targetEntity="App\Entity\EducationalOrganization")
      * @ORM\JoinTable(inverseJoinColumns={@ORM\JoinColumn(unique=true)})
      * @ApiProperty(iri="http://schema.org/alumniOf")
+     * @Groups({"admin:output","admin:input","user:output","user:input"})
      */
     private $alumniOfs;
 
@@ -48,6 +58,7 @@ class Person
      * @ORM\Column(type="date", nullable=true)
      * @ApiProperty(iri="http://schema.org/birthDate")
      * @Assert\Date
+     * @Groups({"admin:output","admin:input","anonymous:input","user:output","user:input"})
      */
     private $birthDate;
 
@@ -57,23 +68,32 @@ class Person
      * @ORM\ManyToMany(targetEntity="App\Entity\Person")
      * @ORM\JoinTable(inverseJoinColumns={@ORM\JoinColumn(unique=true)})
      * @ApiProperty(iri="http://schema.org/colleague")
+     * @Groups({"admin:output","admin:input","user:output","user:input"})
      */
     private $colleagues;
 
     /**
      * @var string|null email address
      *
-     * @ORM\Column(type="text", nullable=true)
+     * @ORM\Column(type="text", nullable=false)
      * @ApiProperty(iri="http://schema.org/email")
      * @Assert\Email
+     * @Groups({"anonymous:input","admin:output","admin:input","user:output","user:input"})
      */
     private $email;
-
+    /**
+     * @var string|null password
+     *
+     * @ORM\Column(type="text", nullable=false)
+     * @Groups({"anonymous:input","user:input"})
+     */
+    private $password;
     /**
      * @var Person|null a person or organization that supports (sponsors) something through some kind of financial contribution
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\Person")
      * @ApiProperty(iri="http://schema.org/funder")
+     * @Groups({"anonymous:input","admin:output","admin:input"})
      */
     private $funder;
 
@@ -82,6 +102,7 @@ class Person
      *
      * @ORM\Column(type="text", nullable=true)
      * @ApiProperty(iri="http://schema.org/gender")
+     * @Groups({"anonymous:input","admin:output","admin:input","user:output","user:input"})
      */
     private $gender;
 
@@ -90,6 +111,7 @@ class Person
      *
      * @ORM\Column(type="text", nullable=true)
      * @ApiProperty(iri="http://schema.org/name")
+     * @Groups({"anonymous:input","admin:output","admin:input","user:output","user:input"})
      */
     private $name;
 
@@ -98,6 +120,7 @@ class Person
      *
      * @ORM\ManyToMany(targetEntity="App\Entity\Skill")
      * @ORM\JoinTable(inverseJoinColumns={@ORM\JoinColumn(unique=true)})
+     * @Groups({"anonymous:input","admin:output","admin:input","user:output","user:input"})
      */
     private $skills;
 
@@ -106,14 +129,23 @@ class Person
      *
      * @ORM\ManyToMany(targetEntity="App\Entity\Language")
      * @ORM\JoinTable(inverseJoinColumns={@ORM\JoinColumn(unique=true)})
+     * @Groups({"anonymous:input","admin:output","admin:input","user:output","user:input"})
      */
     private $knowsLanguages;
-
+    /**
+     * @var Collection<Role>|null
+     *
+     * @ORM\ManyToMany(targetEntity="App\Entity\Role")
+     * @ORM\JoinTable(inverseJoinColumns={@ORM\JoinColumn(unique=false)})
+     * @Groups({"admin:output","admin:input"})
+     */
+    private $userRoles;
     /**
      * @var string|null the telephone number
      *
      * @ORM\Column(type="text", nullable=true)
      * @ApiProperty(iri="http://schema.org/telephone")
+     * @Groups({"anonymous:input","admin:output","admin:input","user:output","user:input"})
      */
     private $telephone;
 
@@ -122,6 +154,7 @@ class Person
      *
      * @ORM\Column(type="text", nullable=true)
      * @ApiProperty(iri="http://schema.org/description")
+     * @Groups({"anonymous:input","admin:output","admin:input","user:output","user:input"})
      */
     private $description;
 
@@ -131,6 +164,7 @@ class Person
      * @ORM\Column(type="text", nullable=true)
      * @ApiProperty(iri="http://schema.org/image")
      * @Assert\Url
+     * @todo uzupełnić
      */
     private $image;
 
@@ -140,6 +174,7 @@ class Person
         $this->colleagues = new ArrayCollection();
         $this->skills = new ArrayCollection();
         $this->knowsLanguages = new ArrayCollection();
+        $this->roles = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -195,6 +230,22 @@ class Person
     public function getEmail(): ?string
     {
         return $this->email;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getPassword(): ?string
+    {
+        return $this->password;
+    }
+
+    /**
+     * @param string|null $password
+     */
+    public function setPassword(?string $password): void
+    {
+        $this->password = $password;
     }
 
     public function setFunder(?Person $funder): void
@@ -286,4 +337,36 @@ class Person
     {
         return $this->image;
     }
+    public function addUserRole(Role $role):  void {
+        $this->userRoles[] = $role;
+    }
+    public function removeUserRole(Role $role): void
+    {
+        $this->userRoles->removeElement($role);
+    }
+    public function getUserRoles()
+    {
+        return $this->userRoles->getValues();
+    }
+    public function getRoles(){
+        return array_map(function (Role $role){
+            return $role->getName();
+        }, $this->userRoles->toArray());
+    }
+    public function getSalt()
+    {
+        return "";
+    }
+
+    public function getUsername()
+    {
+        return $this->email;
+    }
+
+    public function eraseCredentials()
+    {
+        // TODO: Implement eraseCredentials() method.
+    }
+
+
 }

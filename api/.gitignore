@@ -10,7 +10,14 @@
 /vendor/
 ###< symfony/framework-bundle ###
 
-###> friendsofphp/php-cs-fixer ###
+###> frieqwndsofphp/php-cs-fixer ###
 /.php_cs
 /.php_cs.cache
 ###< friendsofphp/php-cs-fixer ###
+
+###> lexik/jwt-authentication-bundle ###
+/config/jwt/*.pem
+###< lexik/jwt-authentication-bundle ###
+
+symfony.lock
+composer.lock

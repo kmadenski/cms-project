@@ -15,8 +15,15 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Entity
  * @ApiResource(iri="http://schema.org/Thing",
- *     collectionOperations={},
- *     itemOperations={}
+ *     collectionOperations={
+ *          "GET"={"security"="is_granted('ROLE_ADMIN')"},
+ *          "POST"={"security"="is_granted('ROLE_ADMIN')"},
+ *     },
+ *     itemOperations={
+ *          "GET"={"security"="is_granted('ROLE_ADMIN')"},
+ *          "PUT"={"security"="is_granted('ROLE_ADMIN')"},
+ *          "DELETE"={"security"="is_granted('ROLE_ADMIN')"}
+ *     }
  * )
  */
 class Skill
