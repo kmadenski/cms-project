@@ -16,8 +16,15 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  * @ORM\Entity()
  * @ApiResource(iri="http://schema.org/ProgramMembership",
- *     collectionOperations={"GET","POST"},
- *     itemOperations={"GET","DELETE"}
+ *     collectionOperations={
+ *          "GET"={"security"="is_granted('ROLE_ADMIN') or (is_granted('ROLE_USER'))"},
+ *          "POST"={"security"="is_granted('ROLE_ADMIN') or (is_granted('ROLE_USER'))"},
+ *     },
+ *     itemOperations={
+ *          "GET"={"security"="is_granted('ROLE_ADMIN') or (is_granted('ROLE_USER') and object.getMember() == user) or (is_granted('ROLE_USER') and object.getCourse().getFunder() == user)"},
+ *          "PUT"={"security"="is_granted('ROLE_ADMIN')"},
+ *          "DELETE"={"security"="is_granted('ROLE_ADMIN') or (is_granted('ROLE_USER') and object.getMember() == user) or (is_granted('ROLE_USER') and object.getCourse().getFunder() == user)"},
+ *     }
  * )
  */
 class Membership
@@ -28,7 +35,7 @@ class Membership
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="AUTO")
      * @ORM\Column(type="integer")
-     * @Groups({"user:action.accept"})
+     * @Groups({"user:action.accept","admin:output"})
      */
     private $id;
 
@@ -38,7 +45,8 @@ class Membership
      * @ORM\ManyToOne(targetEntity="App\Entity\Course")
      * @ORM\JoinColumn(nullable=false)
      * @Assert\NotNull()
-     * @Groups({"user:action.accept"})
+     * @ApiProperty(attributes={"fetchEager": false})
+     * @Groups({"user:action.accept","admin:output","admin:input","user:input","user:output"})
      */
     private $course;
 
@@ -46,7 +54,8 @@ class Membership
      * @var Person
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\Person")
-     * @ApiProperty(iri="http://schema.org/member")
+     * @ApiProperty(iri="http://schema.org/member",attributes={"fetchEager": false})
+     * @Groups({"admin:output","admin:input","user:input","user:output"})
      * @Assert\NotNull()
      */
     private $member;
@@ -85,4 +94,22 @@ class Membership
     {
         return $this->member;
     }
+
+    /**
+     * @param Course|null $course
+     */
+    public function setCourse(?Course $course): void
+    {
+        $this->course = $course;
+    }
+
+    /**
+     * @param Person $member
+     */
+    public function setMember(Person $member): void
+    {
+        $this->member = $member;
+    }
+
+
 }

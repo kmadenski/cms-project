@@ -9,6 +9,7 @@ use ApiPlatform\Core\Serializer\SerializerContextBuilderInterface;
 use App\Entity\Course;
 use App\Entity\EducationEvent;
 use App\Entity\JoinAction;
+use App\Entity\Membership;
 use App\Entity\NotifyWish;
 use App\Entity\Person;
 use Symfony\Component\HttpFoundation\Request;
@@ -43,8 +44,8 @@ class PeopleContextBuilder implements SerializerContextBuilderInterface
             Course::class,
             EducationEvent::class,
             NotifyWish::class,
+            Membership::class
         ];
-        //@todo rozdzielić JoinAction na PUT i POST, gdyż tam jest możliwa edycja statusu tylko na put
 
         if(in_array($resourceClass, $classes)) {
             try {

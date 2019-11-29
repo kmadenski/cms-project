@@ -271,5 +271,7 @@ class Course
     {
         return $this->educationEvents;
     }
-
+    public function isPublic(): bool {
+        return !$this->isPrivate;
+    }
 }

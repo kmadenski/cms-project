@@ -7,6 +7,8 @@ namespace App\Extension;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Extension\QueryCollectionExtensionInterface;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Extension\QueryItemExtensionInterface;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
+use App\Entity\JoinAction;
+use App\Entity\Membership;
 use App\Entity\NotifyWish;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Security\Core\Security;
@@ -33,12 +35,21 @@ class CurrentUserExtension implements QueryCollectionExtensionInterface, QueryIt
 
     private function addWhere(QueryBuilder $queryBuilder, string $resourceClass): void
     {
-        if (NotifyWish::class !== $resourceClass || $this->security->isGranted('ROLE_ADMIN') || null === $user = $this->security->getUser()) {
+        $classes = [
+            JoinAction::class,
+            NotifyWish::class,
+            Membership::class
+        ];
+        if (!in_array($resourceClass, $classes) || $this->security->isGranted('ROLE_ADMIN') || null === $user = $this->security->getUser()) {
             return;
         }
-
+        $propertyName = [
+            JoinAction::class => 'funder',
+            NotifyWish::class => 'funder',
+            Membership::class => 'member'
+        ];
         $rootAlias = $queryBuilder->getRootAliases()[0];
-        $queryBuilder->andWhere(sprintf('%s.funder = :current_user', $rootAlias));
+        $queryBuilder->andWhere(sprintf('%s.'.$propertyName[$resourceClass].' = :current_user', $rootAlias));
         $queryBuilder->setParameter('current_user', $user);
     }
 }
