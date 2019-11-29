@@ -26,9 +26,12 @@ services:
         resource: '../src/Controller'
         tags: ['controller.service_arguments']
 
-    # add more service definitions when explicit configuration is needed
-    # please note that last definitions always *replace* previous ones
+
     App\Serializer\PeopleContextBuilder:
         decorates: 'api_platform.serializer.context_builder'
         arguments: [ '@App\Serializer\PeopleContextBuilder.inner' ]
+        autoconfigure: false
+    App\Serializer\JoinActionContextBuilder:
+        decorates: 'api_platform.serializer.context_builder'
+        arguments: [ '@App\Serializer\JoinActionContextBuilder.inner' ]
         autoconfigure: false

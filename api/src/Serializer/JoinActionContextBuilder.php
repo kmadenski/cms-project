@@ -4,7 +4,6 @@
 namespace App\Serializer;
 
 
-use ApiPlatform\Core\Exception\RuntimeException;
 use ApiPlatform\Core\Serializer\SerializerContextBuilderInterface;
 use App\Entity\Course;
 use App\Entity\EducationEvent;
@@ -15,7 +14,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationCredentialsNotFoundException;
 
-class PeopleContextBuilder implements SerializerContextBuilderInterface
+class JoinActionContextBuilder implements SerializerContextBuilderInterface
 {
     /** @var SerializerContextBuilderInterface */
     private $decorated;
@@ -38,38 +37,30 @@ class PeopleContextBuilder implements SerializerContextBuilderInterface
         $context = $this->decorated->createFromRequest($request, $normalization, $extractedAttributes);
         $resourceClass = $context['resource_class'] ?? null;
 
-        $classes = [
-            Person::class,
-            Course::class,
-            EducationEvent::class,
-            NotifyWish::class,
-        ];
-        //@todo rozdzielić JoinAction na PUT i POST, gdyż tam jest możliwa edycja statusu tylko na put
-
-        if(in_array($resourceClass, $classes)) {
-            try {
-                if($this->authorizationChecker->isGranted('ROLE_ADMIN')){
-                    if($normalization){
-                        $context['groups'][] = 'admin:output';
-                    }else{
-                        $context['groups'][] = 'admin:input';
+        if(JoinAction::class === $resourceClass) {
+            if($this->authorizationChecker->isGranted('ROLE_ADMIN')) {
+                if($normalization){
+                    $context['groups'][] = 'admin:output';
+                }else{
+                    $context['groups'][] = 'admin:input';
+                }
+            }else if($this->authorizationChecker->isGranted('ROLE_USER')) {
+                if(isset($context['item_operation_name'])){
+                    if($context['item_operation_name'] === 'accept'){
+                        $context['groups'][] = 'user:action.accept';
+                    }else if($context['item_operation_name'] === 'reject'){
+                        $context['groups'][] = 'user:action.reject';
                     }
-                }else if($this->authorizationChecker->isGranted('ROLE_USER')){
+                }
+                else{
                     if($normalization){
                         $context['groups'][] = 'user:output';
                     }else{
                         $context['groups'][] = 'user:input';
                     }
-                }else{
-                    $context['groups'][] = 'anonymous:input';
-                }
-            } catch (AuthenticationCredentialsNotFoundException $exception) {
-                if(!$normalization){
-                    $context['groups'][] = 'anonymous:input';
                 }
             }
         }
         return $context;
     }
-
 }

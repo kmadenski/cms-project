@@ -6,6 +6,7 @@ namespace App\Entity;
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -27,6 +28,7 @@ class Membership
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="AUTO")
      * @ORM\Column(type="integer")
+     * @Groups({"user:action.accept"})
      */
     private $id;
 
@@ -35,16 +37,52 @@ class Membership
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\Course")
      * @ORM\JoinColumn(nullable=false)
+     * @Assert\NotNull()
+     * @Groups({"user:action.accept"})
      */
     private $course;
 
     /**
      * @var Person
      *
-     * @ORM\OneToOne(targetEntity="App\Entity\Person")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\ManyToOne(targetEntity="App\Entity\Person")
      * @ApiProperty(iri="http://schema.org/member")
      * @Assert\NotNull()
      */
     private $member;
+
+    /**
+     * Membership constructor.
+     * @param Course|null $course
+     * @param Person $member
+     */
+    public function __construct(?Course $course, Person $member)
+    {
+        $this->course = $course;
+        $this->member = $member;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    /**
+     * @return Course|null
+     */
+    public function getCourse(): ?Course
+    {
+        return $this->course;
+    }
+
+    /**
+     * @return Person
+     */
+    public function getMember(): Person
+    {
+        return $this->member;
+    }
 }

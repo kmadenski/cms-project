@@ -23,9 +23,21 @@ use Symfony\Component\Validator\Constraints as Assert;
  *          "POST"={"security"="is_granted('ROLE_ADMIN') or is_granted('ROLE_USER')"},
  *     },
  *     itemOperations={
- *          "GET"={"security"="is_granted('ROLE_ADMIN') or (is_granted('ROLE_USER') and object.course.funder == user) or (is_granted('ROLE_USER') and object.funder == user)"},
- *          "PUT"={"security"="is_granted('ROLE_ADMIN') or (is_granted('ROLE_USER') and object.course.funder == user)"},
- *          "DELETE"={"security"="is_granted('ROLE_ADMIN') or (is_granted('ROLE_USER') and object.course.funder == user) or (is_granted('ROLE_USER') and object.funder == user)"},
+ *          "GET"={"security"="is_granted('ROLE_ADMIN') or (is_granted('ROLE_USER') and object.getCourse().getEditor() == user) or (is_granted('ROLE_USER') and object.getFunder() == user)"},
+ *          "DELETE"={"security"="is_granted('ROLE_ADMIN') or (is_granted('ROLE_USER') and object.getCourse().getEditor() == user) or (is_granted('ROLE_USER') and object.getFunder() == user)"},
+ *          "PUT"={"security"="is_granted('ROLE_ADMIN')"},
+ *          "accept"={
+ *              "method"="PUT",
+ *              "path"="/join_actions/{id}/accept",
+ *              "controller"="App\Controller\JoinAction\AcceptJoinAction",
+ *              "security"="is_granted('ROLE_ADMIN') or (is_granted('ROLE_USER') and object.getCourse().getEditor() == user and object.isAcceptable())",
+ *          },
+ *          "reject"={
+ *              "method"="PUT",
+ *              "path"="/join_actions/{id}/reject",
+ *              "controller"="App\Controller\JoinAction\RejectJoinAction",
+ *              "security"="is_granted('ROLE_ADMIN') or (is_granted('ROLE_USER') and object.getCourse().getEditor() == user and object.isRejectable())",
+ *          }
  *     }
  * )
  */
@@ -37,6 +49,7 @@ class JoinAction
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="AUTO")
      * @ORM\Column(type="integer")
+     * @Groups({"admin:output","user:action.reject"})
      */
     private $id;
 
@@ -46,7 +59,7 @@ class JoinAction
      * @ORM\Column(nullable=true)
      * @ApiProperty(iri="http://schema.org/actionStatus")
      * @Assert\Choice(callback={"App\Enum\ActionStatusType", "toArray"})
-     * @Groups({"anonymous:input","admin:output","admin:input","user:output","user:input"})
+     * @Groups({"admin:input","admin:output","user:action.reject"})
      */
     private $actionStatus;
 
@@ -55,7 +68,7 @@ class JoinAction
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\Course")
      * @ORM\JoinColumn(nullable=false)
-     * @Groups({"anonymous:input","admin:output","admin:input","user:output","user:input"})
+     * @Groups({"admin:input","admin:output","user:action.reject"})
      * @ApiProperty(attributes={"fetchEager": false})
      */
     private $course;
@@ -65,7 +78,7 @@ class JoinAction
      * @ORM\ManyToOne(targetEntity="App\Entity\Person")
      * @ORM\JoinColumn(nullable=false)
      * @Assert\NotNull
-     * @Groups({"admin:output","admin:input","user:output"})
+     * @Groups({"admin:output","admin:input"})
      * @ApiProperty(attributes={"fetchEager": false})
      */
     private $funder;
@@ -85,7 +98,12 @@ class JoinAction
     {
         return $this->actionStatus;
     }
-
+    public function isAcceptable(): bool {
+        return  $this->actionStatus !== ActionStatusType::COMPLETED_ACTION_STATUS && $this->actionStatus !== ActionStatusType::FAILED_ACTION_STATUS;
+    }
+    public function isRejectable(): bool {
+        return  $this->actionStatus !== ActionStatusType::COMPLETED_ACTION_STATUS && $this->actionStatus !== ActionStatusType::FAILED_ACTION_STATUS;
+    }
     public function setCourse(?Course $course): void
     {
         $this->course = $course;
