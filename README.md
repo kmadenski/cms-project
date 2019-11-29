@@ -17,11 +17,13 @@ docker-compose exec php sh -c '
     setfacl -dR -m u:www-data:rX -m u:"$(whoami)":rwX config/jwt
 '
 ```
-```
-Jak się zalogować?:
-Trzeba dodać użytkownika do bazy danych przed tym. Hasło musi być zahashowane. Hash dla hasła można uzyskać poprzez komendę
-docker-compose exec php bin/console security:encode-password
+Następnie należy zaimportować przykładowego użytkownika i admina do bazy danych.
+W plku dump/user.sql znajduje się niezbędna sql-ka
+
+Poniżej przykładowy curl - logowanie: 
 https://gist.github.com/kmadenski/f412b9bfdde3c333fa5f6586e77afda9
-Jeśli chodzi o admina to z uwagi na brak logowania korzystałem z wtyczki do chrome ModHeader, aby korzystać z admina do czasu implementacji logowania
-```
+
+Admin nie ma zrobionego frontu do trzymania stanu uwierzytelnienia, więc można pobrać token np. postmanem i za pomocą wtyczki ModHeader dodać do każdego zapytania przeglądarki
+https://chrome.google.com/webstore/detail/modheader/idgpnmonknjnojddfkpgkljpfnnfcklj
+
 [Read the official "Getting Started" guide](https://api-platform.com/docs/distribution).
