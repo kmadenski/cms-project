@@ -27,6 +27,11 @@ security:
             methods: [POST]
             stateless: true
             anonymous: true
+        docs:
+            pattern: ^/$
+            methods: [GET]
+            stateless: true
+            anonymous: true
         api:
             pattern: ^/
             stateless: true
@@ -37,3 +42,4 @@ security:
     access_control:
         - { path: ^/authentication_token, roles: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/people, roles: IS_AUTHENTICATED_ANONYMOUSLY, methods: [POST]}
+        - { path: ^/, roles: IS_AUTHENTICATED_ANONYMOUSLY, methods: [GET]}
