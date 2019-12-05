@@ -1,6 +1,9 @@
 import React from 'react'
 import { Layout, Menu, Row, Col, Button } from 'antd'
 import {Link} from 'react-router-dom'
+import {connect} from 'react-redux'
+import Cookie from 'js-cookie'
+import {logout as logoutAction} from '../store/user'
 
 const menuProps = {
   theme: "dark",
@@ -8,7 +11,13 @@ const menuProps = {
   style: {lineHeight: '64px'}
 }
 
-const Header = () => {
+const Header = ({user}) => {
+  const logout = () => {
+    logoutAction()
+    Cookie.remove('token')
+    Cookie.remove('userId')
+  }
+
   return (
     <Layout.Header>
       <Row type="flex" align="middle">
@@ -23,12 +32,33 @@ const Header = () => {
         </Col>
 
         <Col className="ml-auto">
-          <Link className="ant-btn mr-2" to="/login">Logowanie</Link>
-          <Link className="ant-btn ant-btn-primary" to="/rejestracja">Rejestracja</Link>
+          {
+            user.name
+            ? (
+              <>
+                <span className="text-white mr-3">{user.name}</span>
+                <Button onClick={logout}>wyloguj</Button>
+              </>
+            )
+            : (
+              <>
+                <Link className="ant-btn mr-2" to="/login">Logowanie</Link>
+                <Link className="ant-btn ant-btn-primary" to="/rejestracja">Rejestracja</Link>
+              </>
+            )
+          }
         </Col>
       </Row>
     </Layout.Header>
   )
 }
 
-export default Header
+const mapStateToProps = state => ({
+  user: state.user
+})
+
+const mapDispatchToProps = {
+  logoutAction
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Header)

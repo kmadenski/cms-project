@@ -12,3 +12,7 @@
 .d-block {
     display: block;
 }
+
+.text-white {
+    color: #fff;
+}
