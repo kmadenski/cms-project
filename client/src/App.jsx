@@ -9,11 +9,13 @@ import Login from './pages/Login';
 import Auth from './api/Auth'
 import { login } from './store/user'
 import Grupy from './pages/Grupy/index'
+import UserProfile from './pages/Profile'
+import PrivateRoute from './components/PrivateRoute'
 
 const { Footer, Content } = Layout;
 
 const App = ({loginAction}) => {
-  const [loading, setLoading] = React.useState()
+  const [loading, setLoading] = React.useState(true)
 
   React.useEffect(() => {
     const userId = Cookie.get('userId')
@@ -25,6 +27,8 @@ const App = ({loginAction}) => {
         .me()
         .then(({body}) => loginAction(body))
         .finally(() => setLoading(false))
+    } else {
+      setLoading(false)
     }
   }, [])
 
@@ -41,6 +45,7 @@ const App = ({loginAction}) => {
             <Route path="/rejestracja"><Register /></Route>
             <Route path="/login"><Login /></Route>
             <Route path="/grupy"><Grupy /></Route>
+            <PrivateRoute path="/profil"><UserProfile /></PrivateRoute>
             <Route path="*"><Result status="404"/></Route>
           </Switch>
         </div>

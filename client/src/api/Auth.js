@@ -17,5 +17,11 @@ export default {
   me: () => {
     const userId = Cookie.get('userId')
     return authAgent.get(`/people/${userId}`)
+  },
+
+  updateUser: data => {
+    const userId = Cookie.get('userId')
+
+    return authAgent.put(`/people/${userId}`).send(data)
   }
 }

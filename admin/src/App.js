@@ -9,7 +9,7 @@ const authProvider = () => ({
   login: ({ username, password }) =>  {
       const request = new Request(`${entrypoint}/authentication_token`, {
           method: 'POST',
-          body: JSON.stringify({ username: 'admin@mas.pl', password: '123' }),
+          body: JSON.stringify({ email: 'admin@mas.pl', password: '123' }),
           headers: new Headers({ 'Content-Type': 'application/json' }),
       });
       return fetch(request)
@@ -53,14 +53,38 @@ const apiDocumentationParser = entrypoint => parseHydraDocumentation(entrypoint,
     );
 const dataProvider = baseDataProvider(entrypoint, fetchHydra, apiDocumentationParser);
 
+export default () => {
+  const [token, setToken] = React.useState(null)
 
-export default () => (
-  <HydraAdmin
-    apiDocumentationParser={ apiDocumentationParser }
-    dataProvider={ dataProvider }
-    authProvider={ authProvider }
-    entrypoint={ entrypoint }
-  >
-    <ResourceGuesser name="people" />
-  </HydraAdmin>
-);
+  React.useEffect(() => {
+    const request = new Request(`${entrypoint}/authentication_token`, {
+      method: 'POST',
+      body: JSON.stringify({ email: 'admin@mas.pl', password: '123' }),
+      headers: new Headers({ 'Content-Type': 'application/json' }),
+    });
+
+    fetch(request)
+      .then(rsp => rsp.json())
+      .then(({token}) => {
+        localStorage.setItem('token', token);
+        setTimeout(() => setToken(token), 100)
+      })
+  }, [])
+
+  if (!token) return 'loading...'
+
+  return (
+    <HydraAdmin
+      apiDocumentationParser={ apiDocumentationParser }
+      dataProvider={ dataProvider }
+      authProvider={ authProvider }
+      entrypoint={ entrypoint }
+    />
+  )
+}
+
+// export default () => (
+
+//     <ResourceGuesser name="Person" />
+//   </HydraAdmin>
+// );

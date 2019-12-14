@@ -1,103 +1,90 @@
 import React from 'react'
-import {Row, Col, Typography, Form, Button, Input, Switch, Radio, Cascader} from 'antd'
-import {places} from './places'
+import Cookie from 'js-cookie'
+import {Row, Col, Typography, Form, Button, Input, Switch, Radio, Cascader, Select, InputNumber, notification} from 'antd'
+import skillsAPI from './../../api/skills'
+import courseAPI from './../../api/course'
 
-const locations = [
-  {
-    value: 'dolnośląskie',
-    label: 'dolnośląskie',
-    children: []
-  },
-  {
-    value: 'kujawsko-pomorskie',
-    label: 'kujawsko-pomorskie',
-    children: []
-  },
-  {
-    value: 'lubelskie',
-    label: 'lubelskie',
-    children: []
-  },
-  {
-    value: 'lubuskie',
-    label: 'lubuskie',
-    children: []
-  },
-  {
-    value: 'łódzkie',
-    label: 'łódzkie',
-    children: []
-  },
-  {
-    value: 'małopolskie',
-    label: 'małopolskie',
-    children: []
-  },
-  {
-    value: 'mazowieckie',
-    label: 'mazowieckie',
-    children: []
-  },
-  {
-    value: 'opolskie',
-    label: 'opolskie',
-    children: []
-  },
-  {
-    value: 'podkarpackie',
-    label: 'podkarpackie',
-    children: []
-  },
-  {
-    value: 'podlaskie',
-    label: 'podlaskie',
-    children: []
-  },
-  {
-    value: 'pomorskie',
-    label: 'pomorskie',
-    children: []
-  },
-  {
-    value: 'śląskie',
-    label: 'śląskie',
-    children: []
-  },
-  {
-    value: 'świętokrzyskie',
-    label: 'świętokrzyskie',
-    children: []
-  },
-  {
-    value: 'warmińsko-mazurskie',
-    label: 'warmińsko-mazurskie',
-    children: []
-  },
-  {
-    value: 'wielkopolskie',
-    label: 'wielkopolskie',
-    children: []
-  },
-  {
-    value: 'zachodniopomorskie',
-    label: 'zachodniopomorskie',
-    children: []
+const requiredFiled = {rules: [{required: true}]}
+
+class CreateGroup extends React.Component {
+  constructor(props) {
+    super(props)
+
+    this.state = {
+      skills: null,
+      sending: false,
+      loading: false
+    }
   }
-]
 
-export default () => {
-  return (
-    <Row type="flex" justify="center">
-      <Col span={24}>
-        <Typography.Title level={2}>Utwórz grupę</Typography.Title>
-        <Form labelCol={{ span: 3 }} wrapperCol={{ span: 9 }} >
-          <Form.Item label="Nazwa"><Input name="name" /></Form.Item>
-          <Form.Item label="Grupa prywatna"><Switch name="private"/></Form.Item>
-          <Form.Item label="Lokalizacja"><Cascader options={locations}/></Form.Item>
+  componentDidMount() {
+    skillsAPI
+      .getAll()
+      .then(({body}) => this.setState({skills: body['hydra:member']}))
+      .catch(error => notification.error({
+        message: 'Błąd przy pobieraniu tematów',
+        description: JSON.stringify(error.body || error).substr(0, 255)
+      }))
+  }
 
-          <Button type="primary" htmlType="submit" size="large">Wyślij</Button>
-        </Form>
-      </Col>
-    </Row>
-  )
+  submit = (e) => {
+    e.preventDefault()
+
+    this.props.form.validateFieldsAndScroll((err, values) => {
+      if (!err) {
+        this.setState({loading: true})
+        courseAPI
+          .add({
+            ...values,
+            isPrivate: Boolean(values.isPrivate),
+            minimumAttendeeCapacity: 1,
+            editor: 'people/' + Cookie.get('userId'),
+          })
+          .then(console.log)
+          .finally(() => this.setState({loading: false}))
+      }
+    });
+  }
+
+  render() {
+    const {skills, sending} = this.state
+    const {getFieldDecorator} = this.props.form
+
+    return (
+      <Row type="flex" justify="center">
+        <Col span={24}>
+          <Typography.Title level={2}>Utwórz grupę</Typography.Title>
+          <Form onSubmit={this.submit}>
+            <Form.Item label="Tematy">
+              {getFieldDecorator('abouts', requiredFiled)(
+                <Select mode="multiple" name="skills" loading={!Boolean(skills)}>
+                  {skills && skills.map(({id, name}) => <Select.Option key={id} value={`skills/${id}`}>{name}</Select.Option>)}
+                </Select>
+              )}
+            </Form.Item>
+
+            <Form.Item label="Opis">
+              {getFieldDecorator('abstract', requiredFiled)(
+                <Input.TextArea rows={4}/>
+              )}
+            </Form.Item>
+
+            <Form.Item label="Maksymalna liczba osób">
+              {getFieldDecorator('maximumAttendeeCapacity', requiredFiled)(
+                <InputNumber min={1} max={100} />
+              )}
+            </Form.Item>
+
+            <Form.Item label="Grupy prywatna">
+              {getFieldDecorator('isPrivate')(<Switch />)}
+            </Form.Item>
+
+            <Button type="primary" htmlType="submit" size="large" loading={sending}>Wyślij</Button>
+          </Form>
+        </Col>
+      </Row>
+    )
+  }
 }
+
+export default Form.create({name: 'creategroup'})(CreateGroup)

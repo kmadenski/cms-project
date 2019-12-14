@@ -1,6 +1,7 @@
 import superagent from 'superagent'
 import Cookie from 'js-cookie'
 import {ENTRYPOINT} from '../config/entrypoint'
+import { notification } from 'antd'
 
 const urlPrefix = request => {
   request.url = ENTRYPOINT + request.url
@@ -18,7 +19,7 @@ const auth = request => {
 export const agent = superagent
   .agent()
   .use(urlPrefix)
-  .accept('application/json')
+  .accept('application/ld+json')
   .type('application/json')
 
 /** @type {superagent} */

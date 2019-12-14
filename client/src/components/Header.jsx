@@ -25,15 +25,10 @@ const Header = ({user}) => {
 
         <Col>
           <Menu {...menuProps}>
-            <Menu.Item key="1">nav 1</Menu.Item>
-            <Menu.Item key="2">nav 2</Menu.Item>
-            <Menu.Item key="3">nav 3</Menu.Item>
-            <Menu.SubMenu title="a">
-              {/* <Menu.ItemGroup title="Item 1"> */}
-                <Menu.Item key="setting:1">Option 1</Menu.Item>
-                <Menu.Item key="setting:2">Option 2</Menu.Item>
-              {/* </Menu.ItemGroup> */}
-            </Menu.SubMenu>
+            <Menu.Item key="1">
+              Grupy
+              <Link to="/grupy" />
+            </Menu.Item>
           </Menu>
         </Col>
 
@@ -42,7 +37,7 @@ const Header = ({user}) => {
             user.name
             ? (
               <>
-                <span className="text-white mr-3">{user.name}</span>
+                <Link className="text-white mr-3" to="/profil">{user.name}</Link>
                 <Button onClick={logout}>wyloguj</Button>
               </>
             )

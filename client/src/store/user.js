@@ -17,3 +17,5 @@ export default (state = {}, action) => {
 
 export const login = payload => ({type: actionTypes.login, payload})
 export const logout = () => ({type: actionTypes.logout})
+
+export const isAuthorized = state => state.user.name
