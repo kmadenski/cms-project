@@ -1,5 +1,5 @@
 import React from 'react'
-import { Layout, Spin } from 'antd'
+import { Layout, Spin, Result } from 'antd'
 import { Switch, Route } from 'react-router-dom'
 import { connect } from 'react-redux'
 import Cookie from 'js-cookie'
@@ -8,6 +8,7 @@ import Register from './pages/Register';
 import Login from './pages/Login';
 import Auth from './api/Auth'
 import { login } from './store/user'
+import Grupy from './pages/Grupy/index'
 
 const { Footer, Content } = Layout;
 
@@ -33,12 +34,16 @@ const App = ({loginAction}) => {
     <Layout>
       <Header />
 
-      <Content>
-        <Switch>
-          <Route path="/" exact>Home page</Route>
-          <Route path="/rejestracja"><Register /></Route>
-          <Route path="/login"><Login /></Route>
-        </Switch>
+      <Content style={{ padding: '0 50px' }}>
+        <div className="mt-3" style={{ background: '#fff', padding: 24, minHeight: 280 }}>
+          <Switch>
+            <Route path="/" exact>Home page</Route>
+            <Route path="/rejestracja"><Register /></Route>
+            <Route path="/login"><Login /></Route>
+            <Route path="/grupy"><Grupy /></Route>
+            <Route path="*"><Result status="404"/></Route>
+          </Switch>
+        </div>
       </Content>
 
       <Footer theme="dark">

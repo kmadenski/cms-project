@@ -31,7 +31,7 @@ const Login = ({loginAction}) => {
   }
 
   return (
-    <Row type="flex" justify="center" className="my-5">
+    <Row type="flex" justify="center">
       <Col span={6}>
         <Typography.Title level={2}>Logowanie</Typography.Title>
         <Form onSubmit={handleSubmit}>

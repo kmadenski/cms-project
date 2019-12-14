@@ -28,6 +28,12 @@ const Header = ({user}) => {
             <Menu.Item key="1">nav 1</Menu.Item>
             <Menu.Item key="2">nav 2</Menu.Item>
             <Menu.Item key="3">nav 3</Menu.Item>
+            <Menu.SubMenu title="a">
+              {/* <Menu.ItemGroup title="Item 1"> */}
+                <Menu.Item key="setting:1">Option 1</Menu.Item>
+                <Menu.Item key="setting:2">Option 2</Menu.Item>
+              {/* </Menu.ItemGroup> */}
+            </Menu.SubMenu>
           </Menu>
         </Col>
 
