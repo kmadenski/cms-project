@@ -8,6 +8,7 @@ use ApiPlatform\Core\EventListener\EventPriorities;
 use App\Entity\Course;
 use App\Entity\Person;
 use App\Entity\Role;
+use Doctrine\DBAL\Schema\View;
 use Doctrine\ORM\EntityManagerInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Security\Http\Authentication\AuthenticationSuccessHandler;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -47,10 +48,15 @@ class CreatePersonSubscriber implements EventSubscriberInterface
     public static function getSubscribedEvents()
     {
         return [
-            KernelEvents::VIEW => ['registerPerson', EventPriorities::POST_VALIDATE]
+            KernelEvents::VIEW => [
+                'registerPerson', EventPriorities::POST_VALIDATE,
+                'test', EventPriorities::PRE_WRITE
+            ],
         ];
     }
-
+    public function test(ViewEvent $event){
+        print_r(":wadawd");exit;
+    }
     public function registerPerson(ViewEvent $event)
     {
         /** @var Person|null $person */
@@ -61,9 +67,8 @@ class CreatePersonSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $encoded = $this->passwordEncoder->encodePassword($person, $person->getPassword());
+        $encoded = $this->passwordEncoder->encodePassword($person, $person->getPlainPassword());
         $person->setPassword($encoded);
-
         $roleRepository = $this->em->getRepository(Role::class);
 
         /** @var Role|null $role */

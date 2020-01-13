@@ -29,7 +29,15 @@ use Symfony\Component\Validator\Constraints as Assert;
  *     itemOperations={
  *          "GET"={"security"="is_granted('ROLE_ADMIN') or (is_granted('ROLE_USER') and object == user)"},
  *          "PUT"={"security"="is_granted('ROLE_ADMIN') or (is_granted('ROLE_USER') and object == user)"},
- *          "DELETE"={"security"="is_granted('ROLE_ADMIN')"}
+ *          "DELETE"={"security"="is_granted('ROLE_ADMIN')"},
+ *          "password"={
+ *              "method"="PUT",
+ *              "path"="/people/{id}/password",
+ *              "controller"="App\Controller\Person\ChangePasswordAction",
+ *              "security"="is_granted('ROLE_ADMIN') or (is_granted('ROLE_USER') and object == user)",
+ *              "validation_groups"={"person_changepassword"},
+ *              "denormalization_context"={"groups"={"user:changepassword"}}
+ *          }
  *     }
  * )
  */
@@ -89,11 +97,16 @@ class Person implements UserInterface
      * @var string|null password
      *
      * @ORM\Column(type="text", nullable=false)
-     * @Assert\NotNull(groups={"person_post"})
-     * @Assert\Length(min="5", groups={"person_post"})
-     * @Groups({"anonymous:input","user:input"})
      */
     private $password;
+    /**
+     * @var string|null password
+     *
+     * @Assert\NotNull(groups={"person_changepassword"})
+     * @Assert\Length(min="5", groups={"person_post","person_changepassword"})
+     * @Groups({"anonymous:input","user:input","user:changepassword"})
+     */
+    private $plainPassword;
     /**
      * @var Person|null a person or organization that supports (sponsors) something through some kind of financial contribution
      *
@@ -359,6 +372,9 @@ class Person implements UserInterface
     public function getRoles(){
         /** @var array $roles */
         $roles = $this->userRoles;
+        if($roles instanceof Collection){
+            $roles = $roles->toArray();
+        }
         return array_map(function (Role $role){
             return $role->getName();
         }, $roles);
@@ -378,5 +394,24 @@ class Person implements UserInterface
         // TODO: Implement eraseCredentials() method.
     }
 
+    /**
+     * @param string|null $plainPassword
+     */
+    public function setPlainPassword(?string $plainPassword): void
+    {
+        $this->plainPassword = $plainPassword;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getPlainPassword(): ?string
+    {
+        return $this->plainPassword;
+    }
+
+    public function clearPlainPassword(): void {
+        $this->plainPassword = null;
+    }
 
 }

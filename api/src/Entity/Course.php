@@ -98,14 +98,6 @@ class Course
      * @Groups({"admin:output","admin:input","user:output"})
      */
     private $members;
-    /**
-     * @var int
-     *
-     * @ORM\Column(type="integer")
-     * @Groups({"admin:output","admin:input","user:output","user:input"})
-     * @Assert\NotNull
-     */
-    private $minimumAttendeeCapacity;
 
     /**
      * @var int
@@ -216,15 +208,6 @@ class Course
     public function getMembers(): Collection
     {
         return $this->members;
-    }
-    public function setMinimumAttendeeCapacity(int $minimumAttendeeCapacity): void
-    {
-        $this->minimumAttendeeCapacity = $minimumAttendeeCapacity;
-    }
-
-    public function getMinimumAttendeeCapacity(): int
-    {
-        return $this->minimumAttendeeCapacity;
     }
 
     public function setMaximumAttendeeCapacity(int $maximumAttendeeCapacity): void
