@@ -23,7 +23,7 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
  * @ORM\Entity
  * @ApiResource(iri="http://schema.org/Course",
  *     collectionOperations={
- *          "GET"={"security"="is_granted('ROLE_ADMIN') or is_granted('ROLE_USER')"},
+ *          "GET"={},
  *          "POST"={"security"="is_granted('ROLE_ADMIN') or is_granted('ROLE_USER')"},
  *     },
  *     itemOperations={
