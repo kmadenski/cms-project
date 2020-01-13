@@ -1,3 +1,11 @@
+## Update 13.01.2019
+Po pobraniu commitów z dzisiejszego dnia należy zaktualizować strukturę bazy danych
+```bash
+docker-compose exec php sh
+#już wewnątrz kontenera
+bin/console doctrine:migrations:diff
+bin/console doctrine:migrations:migrate
+```
 ## Running
 ```bash
 docker-compose up -d
@@ -27,3 +35,4 @@ Admin nie ma zrobionego frontu do trzymania stanu uwierzytelnienia, więc można
 https://chrome.google.com/webstore/detail/modheader/idgpnmonknjnojddfkpgkljpfnnfcklj
 
 [Read the official "Getting Started" guide](https://api-platform.com/docs/distribution).
+
