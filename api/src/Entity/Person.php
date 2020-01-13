@@ -9,6 +9,7 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -19,10 +20,11 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @see http://schema.org/Person Documentation on Schema.org
  *
  * @ORM\Entity
+ * @UniqueEntity("email",groups={"person_post"})
  * @ApiResource(iri="http://schema.org/Person",
  *     collectionOperations={
  *          "GET"={"security"="is_granted('ROLE_ADMIN')"},
- *          "POST"={}
+ *          "POST"={"validation_groups"={"person_post"}}
  *     },
  *     itemOperations={
  *          "GET"={"security"="is_granted('ROLE_ADMIN') or (is_granted('ROLE_USER') and object == user)"},
@@ -57,8 +59,9 @@ class Person implements UserInterface
      *
      * @ORM\Column(type="date", nullable=true)
      * @ApiProperty(iri="http://schema.org/birthDate")
-     * @Assert\Date
      * @Groups({"admin:output","admin:input","anonymous:input","user:output","user:input"})
+     * @Assert\Date(groups={"person_post"})
+     * @Assert\NotNull(groups={"person_post"})
      */
     private $birthDate;
 
@@ -77,14 +80,17 @@ class Person implements UserInterface
      *
      * @ORM\Column(type="text", nullable=false)
      * @ApiProperty(iri="http://schema.org/email")
-     * @Assert\Email
-     * @Groups({"anonymous:input","admin:output","admin:input","user:output","user:input"})
+     * @Assert\Email(groups={"person_post"})
+     * @Assert\NotNull(groups={"person_post"})
+     * @Groups({"anonymous:input","anonymous:output","admin:output","admin:input","user:output","user:input"})
      */
     private $email;
     /**
      * @var string|null password
      *
      * @ORM\Column(type="text", nullable=false)
+     * @Assert\NotNull(groups={"person_post"})
+     * @Assert\Length(min="5", groups={"person_post"})
      * @Groups({"anonymous:input","user:input"})
      */
     private $password;
@@ -103,6 +109,7 @@ class Person implements UserInterface
      * @ORM\Column(type="text", nullable=true)
      * @ApiProperty(iri="http://schema.org/gender")
      * @Groups({"anonymous:input","admin:output","admin:input","user:output","user:input"})
+     * @Assert\NotNull(groups={"person_post"})
      */
     private $gender;
 
@@ -111,6 +118,7 @@ class Person implements UserInterface
      *
      * @ORM\Column(type="text", nullable=true)
      * @ApiProperty(iri="http://schema.org/name")
+     * @Assert\NotNull(groups={"person_post"})
      * @Groups({"anonymous:input","admin:output","admin:input","user:output","user:input"})
      */
     private $name;
@@ -349,9 +357,11 @@ class Person implements UserInterface
         return $this->userRoles->getValues();
     }
     public function getRoles(){
+        /** @var array $roles */
+        $roles = $this->userRoles;
         return array_map(function (Role $role){
             return $role->getName();
-        }, $this->userRoles->toArray());
+        }, $roles);
     }
     public function getSalt()
     {

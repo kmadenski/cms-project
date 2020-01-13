@@ -62,14 +62,21 @@ class PeopleContextBuilder implements SerializerContextBuilderInterface
                         $context['groups'][] = 'user:input';
                     }
                 }else{
-                    $context['groups'][] = 'anonymous:input';
+                    if(!$normalization){
+                        $context['groups'][] = 'anonymous:input';
+                    }else{
+                        $context['groups'][] = 'anonymous:output';
+                    }
                 }
             } catch (AuthenticationCredentialsNotFoundException $exception) {
                 if(!$normalization){
                     $context['groups'][] = 'anonymous:input';
+                }else{
+                    $context['groups'][] = 'anonymous:output';
                 }
             }
         }
+
         return $context;
     }
 

@@ -27,6 +27,7 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Role
 {
+    CONST ROLE_USER = 'ROLE_USER';
     /**
      * @var int|null
      *
