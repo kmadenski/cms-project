@@ -6,6 +6,7 @@ namespace App\Entity;
 
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Annotation\ApiSubresource;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -115,7 +116,12 @@ class Person implements UserInterface
      * @Groups({"anonymous:input","admin:output","admin:input"})
      */
     private $funder;
-
+    /**
+     * @var Collection<Course>|null
+     * @ORM\OneToMany(targetEntity="App\Entity\Course", mappedBy="editor")
+     * @Groups({"admin:output","admin:input"})
+     */
+    private $courses;
     /**
      * @var string|null Gender of the person. While http://schema.org/Male and http://schema.org/Female may be used, text strings are also acceptable for people who do not identify as a binary gender.
      *
@@ -196,6 +202,7 @@ class Person implements UserInterface
         $this->skills = new ArrayCollection();
         $this->knowsLanguages = new ArrayCollection();
         $this->roles = new ArrayCollection();
+        $this->courses = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -413,5 +420,22 @@ class Person implements UserInterface
     public function clearPlainPassword(): void {
         $this->plainPassword = null;
     }
+
+    /**
+     * @return Collection|null
+     */
+    public function getCourses(): ?Collection
+    {
+        return $this->courses;
+    }
+
+    /**
+     * @param Collection|null $courses
+     */
+    public function setCourses(?Collection $courses): void
+    {
+        $this->courses = $courses;
+    }
+
 
 }

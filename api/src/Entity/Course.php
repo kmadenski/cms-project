@@ -28,8 +28,8 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
  *     },
  *     itemOperations={
  *          "GET"={"security"="is_granted('ROLE_ADMIN') or is_granted('ROLE_USER')"},
- *          "PUT"={"security"="is_granted('ROLE_ADMIN') or (is_granted('ROLE_USER') and and object.editor == user)"},
- *          "DELETE"={"security"="is_granted('ROLE_ADMIN') or (is_granted('ROLE_USER') and and object.editor == user)"},
+ *          "PUT"={"security"="is_granted('ROLE_ADMIN') or (is_granted('ROLE_USER') and object.getEditor() == user)"},
+ *          "DELETE"={"security"="is_granted('ROLE_ADMIN') or (is_granted('ROLE_USER') and object.getEditor() == user)"},
  *     }
  * )
  * @ApiFilter(SearchFilter::class, properties={
@@ -73,7 +73,7 @@ class Course
     /**
      * @var Person specifies the Person who edited the CreativeWork
      *
-     * @ORM\OneToOne(targetEntity="App\Entity\Person")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Person")
      * @ORM\JoinColumn(nullable=false)
      * @ApiProperty(iri="http://schema.org/editor")
      * @Groups({"admin:output","admin:input","user:output"})
@@ -257,4 +257,5 @@ class Course
     public function isPublic(): bool {
         return !$this->isPrivate;
     }
+
 }
