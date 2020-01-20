@@ -193,12 +193,12 @@ class Person implements UserInterface
     private $description;
 
     /**
-     * @var string|null An image of the item. This can be a \[\[URL\]\] or a fully described \[\[ImageObject\]\].
-     *
-     * @ORM\Column(type="text", nullable=true)
+     * @var UserAvatar
+     * @ORM\OneToOne(targetEntity="App\Entity\UserAvatar")
+     * @ORM\JoinColumn(nullable=true)
      * @ApiProperty(iri="http://schema.org/image")
      * @Assert\Url
-     * @todo uzupełnić
+     * @Groups({"admin:output","user:output"})
      */
     private $image;
 
@@ -266,6 +266,22 @@ class Person implements UserInterface
     public function getEmail(): ?string
     {
         return $this->email;
+    }
+
+    /**
+     * @return UserAvatar
+     */
+    public function getImage(): UserAvatar
+    {
+        return $this->image;
+    }
+
+    /**
+     * @param UserAvatar $image
+     */
+    public function setImage(UserAvatar $image): void
+    {
+        $this->image = $image;
     }
 
     /**
@@ -364,15 +380,7 @@ class Person implements UserInterface
         return $this->description;
     }
 
-    public function setImage(?string $image): void
-    {
-        $this->image = $image;
-    }
 
-    public function getImage(): ?string
-    {
-        return $this->image;
-    }
     public function addUserRole(Role $role):  void {
         $this->userRoles[] = $role;
     }

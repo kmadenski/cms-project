@@ -1,3 +1,14 @@
+## Update 21.01.2019
+Po pobraniu commitów z dzisiejszego dnia należy zaktualizować strukturę bazy danych
+```bash
+docker-compose exec php sh
+#już wewnątrz kontenera
+bin/console doctrine:migrations:diff
+bin/console doctrine:migrations:migrate
+composer require vich/uploader-bundle:1.11.0
+mkdir public/media
+chown -R www-data:www-data public/media
+```
 ## Update 13.01.2019
 Po pobraniu commitów z dzisiejszego dnia należy zaktualizować strukturę bazy danych
 ```bash
