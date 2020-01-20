@@ -150,7 +150,14 @@ class Person implements UserInterface
      * @Groups({"anonymous:input","admin:output","admin:input","user:output","user:input"})
      */
     private $skills;
-
+    /**
+     * @var Collection<Region>|null
+     *
+     * @ORM\ManyToMany(targetEntity="App\Entity\Region")
+     * @ORM\JoinTable(inverseJoinColumns={@ORM\JoinColumn(unique=true)})
+     * @Groups({"anonymous:input","admin:output","admin:input","user:output","user:input"})
+     */
+    private $regions;
     /**
      * @var Collection<Language>|null
      *
@@ -203,6 +210,7 @@ class Person implements UserInterface
         $this->knowsLanguages = new ArrayCollection();
         $this->roles = new ArrayCollection();
         $this->courses = new ArrayCollection();
+        $this->regions = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -435,6 +443,22 @@ class Person implements UserInterface
     public function setCourses(?Collection $courses): void
     {
         $this->courses = $courses;
+    }
+
+    /**
+     * @return Collection|null
+     */
+    public function getRegions(): ?Collection
+    {
+        return $this->regions;
+    }
+
+    /**
+     * @param Collection|null $regions
+     */
+    public function setRegions(?Collection $regions): void
+    {
+        $this->regions = $regions;
     }
 
 
